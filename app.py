@@ -8,27 +8,39 @@ import pandas as pd
 
 log_data = []
 ws_thread_started = False
+USDT_MIN_AMOUNT = 100_000  # 최소 거래금액
+MIN_VOLATILITY = 0.001     # 최소 가격 변동폭 (0.1%)
+last_price = [0]           # 최근 가격 기록용
 
 # 고래 감지 함수
 def run_whale_detector(threshold):
     def on_message(ws, message):
-        data = json.loads(message)
-        price = float(data['p'])
-        qty = float(data['q'])
-        amount = price * qty
-        is_buyer_maker = data['m']
+     def on_message(ws, message):
+    data = json.loads(message)
+    price = float(data['p'])
+    qty = float(data['q'])
+    amount = price * qty
+    is_buyer_maker = data['m']
 
-        if qty >= threshold:
-            direction = "🟢 매수" if is_buyer_maker else "🔴 매도"
-            timestamp = datetime.now().strftime('%H:%M:%S')
-            price_label = f"{price:,.2f} USDT에 {direction[2:]}"
-            log_data.append({
-                '시간': timestamp,
-                '거래 방향': direction,
-                '체결가': price_label,
-                '수량': f"{qty:.2f} BTC",
-                '금액': f"{amount:,.2f} USDT"
-            })
+    # 최근 가격 추적 → 변동성 계산
+    last_price.append(price)
+    if len(last_price) > 2:
+        price_change = abs(last_price[-1] - last_price[-2]) / last_price[-2]
+    else:
+        price_change = 0
+
+    # ✅ 고급 조건: 수량 + 금액 + 변동성 필터
+    if qty >= threshold and amount >= USDT_MIN_AMOUNT and price_change >= MIN_VOLATILITY:
+        direction = "🟢 매수" if is_buyer_maker else "🔴 매도"
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        price_label = f"{price:,.2f} USDT에 {direction[2:]}"
+        log_data.append({
+            '시간': timestamp,
+            '거래 방향': direction,
+            '체결가': price_label,
+            '수량': f"{qty:.2f} BTC",
+            '금액': f"{amount:,.2f} USDT"
+        })
 
     def start_ws():
         socket = "wss://stream.binance.com:9443/ws/btcusdt@trade"
