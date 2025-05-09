@@ -68,13 +68,13 @@ if start and not ws_thread_started:
 # 좌우 레이아웃 설정
 left_col, right_col = st.columns([2, 3])
 
-# ▶ 왼쪽: 트레이딩뷰 차트 (임베드 위젯)
+# ▶ 왼쪽: 트레이딩뷰 실시간 캔들 차트
 with left_col:
-    st.subheader("📊 실시간 BTC/USDT 차트")
+    st.subheader("📊 실시간 BTC/USDT 캔들 차트")
     tradingview_embed = """
     <!-- TradingView Widget BEGIN -->
     <div class="tradingview-widget-container">
-      <iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en" 
+      <iframe src="https://s.tradingview.com/embed-widget/advanced-chart/?symbol=BINANCE:BTCUSDT&interval=1&theme=dark&style=1&locale=kr"
               width="100%" height="600" frameborder="0" allowfullscreen></iframe>
     </div>
     <!-- TradingView Widget END -->
